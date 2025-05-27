@@ -1,0 +1,11 @@
+I want to build an ai singing coach application. This is how it would work - 
+
+ I would feed it a song i would like to learn to sing. Then i would sing that song. The app must listen to audio i sang , analyze it and tell me what all changes i need to do and where i need to do in a way even a lay person who doesnt know anything about singing can understand so that i can improve and match the original song. The ai app must also be able to sing and talk to me if possible. So what to do , how do i build this ai application. For now, this could be a web app. 
+
+How do you compare the refernce audio and the audio sang by the user. because you would have to accurately and only compare the same segments from both the audio files. if different segments are compared then the comparison analysis will be off. So should timestamps be used or should lyrics be used.
+
+Note that The analysis should happen in realtime as i am singing if i select the live singing option.
+
+
+https://github.com/Yuan-ManX/audio-development-tools?tab=readme-ov-file
+This is a github repo that contains a list of all audio related tools. Dont limit yourself to use the tools present in this list only. But use this as refernce if you can
