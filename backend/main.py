@@ -10,13 +10,23 @@ from typing import List, Optional
 import soundfile as sf
 import io
 import base64
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+logger.info("Starting Karaoke Pitch Tracker API")
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=["*"],  # React dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,11 +37,11 @@ with open('reference_pitch.json', 'r') as f:
     reference_pitch_data = json.load(f)
 
 # Audio processing parameters
-SAMPLE_RATE = 44100
-FRAME_LENGTH = 2048
-HOP_LENGTH = 512
-FMIN = librosa.note_to_hz('C2')
-FMAX = librosa.note_to_hz('C7')
+SAMPLE_RATE = 44100       # CD-quality audio sampling rate
+FRAME_LENGTH = 2048       # Window size for pitch analysis
+HOP_LENGTH = 512         # Step size between analysis windows
+FMIN = librosa.note_to_hz('C2')  # Minimum frequency (~65 Hz)
+FMAX = librosa.note_to_hz('C7')  # Maximum frequency (~2093 Hz)
 
 class PitchPoint(BaseModel):
     timestamp: float

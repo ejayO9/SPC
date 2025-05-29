@@ -1,8 +1,9 @@
 import json
 import librosa
+import numpy as np
 
 # Load studio song (vocals only or full mix)
-filename = 'songs\song.mp3'  # place your song file here
+filename = "songs/song.mp3"  # place your song file here
 sr = 44100
 
 y, _ = librosa.load(filename, sr=sr, mono=True)
@@ -25,7 +26,7 @@ times = librosa.times_like(f0, sr=sr, hop_length=512)
 
 # Pack into JSON-friendly structure
 pitch_data = [
-    {"timestamp": float(t), "pitch": float(f0_i or 0.0)}
+    {"timestamp": float(t), "pitch": float(f0_i) if not np.isnan(f0_i) else None}
     for t, f0_i in zip(times, f0)
 ]
 
