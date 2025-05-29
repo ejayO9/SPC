@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-logger.info("Starting Karaoke Pitch Tracker API")
+logger.info("Starting ai singing assistant API")
 
 # Configure CORS
 app.add_middleware(
@@ -73,7 +73,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-def detect_pitch_from_audio(audio_data: np.ndarray, sr: int = SAMPLE_RATE) -> List[dict]:
+def detect_pitch_from_audio(audio_data: np.ndarray, sr: int = SAMPLE_RATE) -> List[PitchPoint]:
     """Detect pitch from audio data using pYIN algorithm"""
     try:
         # Ensure audio is mono
@@ -106,8 +106,13 @@ def detect_pitch_from_audio(audio_data: np.ndarray, sr: int = SAMPLE_RATE) -> Li
         print(f"Error detecting pitch: {e}")
         return []
 
-def compare_pitches(reference: List[dict], user: List[dict], time_offset: float = 0) -> List[dict]:
-    """Compare user pitch with reference pitch"""
+def compare_pitches(reference: List[dict], user: List[dict], time_offset: float = 0) -> List[PitchComparison]:
+    """Compare user pitch with reference pitch
+        args :
+            reference : its the pitch data of the reference audio 
+            user : its the pitch data of the user audio which is chunked into x second intervals
+            time_offset : its the time offset of the user audio. for example if the current chunk of user audio is 10 seconds into the song, then the time_offset is 10
+    """
     comparisons = []
     
     # Create a mapping of reference pitches by timestamp
@@ -129,6 +134,9 @@ def compare_pitches(reference: List[dict], user: List[dict], time_offset: float 
             if ref_pitch is not None and user_pitch is not None and ref_pitch > 0:
                 # Calculate percentage deviation
                 deviation = abs(user_pitch - ref_pitch) / ref_pitch * 100
+            elif ref_pitch is None and user_pitch is not None:
+                # User is singing when they shouldn't be (reference is silent)
+                deviation = 100.0
             
             comparisons.append({
                 "timestamp": adjusted_timestamp,
@@ -139,8 +147,13 @@ def compare_pitches(reference: List[dict], user: List[dict], time_offset: float 
     
     return comparisons
 
-def find_problem_sections(comparisons: List[dict], threshold: float = 30.0) -> List[dict]:
-    """Find sections where user's pitch deviates more than threshold percentage"""
+def find_problem_sections(comparisons: List[dict], threshold: float = 30.0, problem_duration: int = 0.5) -> List[dict]:
+    """Find sections where user's pitch deviates more than threshold percentage
+    
+        args :
+            comparisons : its the return data from the compare_pitches function
+            threshold : its the threshold of deviation to consider a section as a problem section to give feedback to the user
+    """
     problem_sections = []
     current_section = None
     
@@ -159,20 +172,20 @@ def find_problem_sections(comparisons: List[dict], threshold: float = 30.0) -> L
                 ) / 2
         else:
             if current_section is not None:
-                # Only add sections longer than 0.5 seconds
-                if current_section['end_time'] - current_section['start_time'] > 0.5:
+                # Only add sections longer than problem_duration seconds
+                if current_section['end_time'] - current_section['start_time'] > problem_duration:
                     problem_sections.append(current_section)
                 current_section = None
     
     # Don't forget the last section
-    if current_section is not None and current_section['end_time'] - current_section['start_time'] > 0.5:
+    if current_section is not None and current_section['end_time'] - current_section['start_time'] > problem_duration:
         problem_sections.append(current_section)
     
     return problem_sections
 
 @app.get("/")
 async def root():
-    return {"message": "Karaoke Pitch Tracker API"}
+    return {"message": " ai singing assistant API"}
 
 @app.get("/reference-pitch")
 async def get_reference_pitch():
