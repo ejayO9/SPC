@@ -1,7 +1,8 @@
 fastapi
 uvicorn[standard]
+websockets
 numpy
-aubio
 librosa
 soundfile
+pydantic
 python-multipart

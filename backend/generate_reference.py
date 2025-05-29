@@ -2,7 +2,7 @@ import json
 import librosa
 
 # Load studio song (vocals only or full mix)
-filename = 'song.wav'  # place your song file here
+filename = 'songs\song.mp3'  # place your song file here
 sr = 44100
 
 y, _ = librosa.load(filename, sr=sr, mono=True)
@@ -11,13 +11,13 @@ y, _ = librosa.load(filename, sr=sr, mono=True)
 fmin = librosa.note_to_hz('C2')
 fmax = librosa.note_to_hz('C7')
 
-f0, voiced_flag, _ = librosa.pyin(
+f0, voiced_flag, voiced_probs = librosa.pyin(
     y,
     fmin=fmin,
     fmax=fmax,
     sr=sr,
     frame_length=2048,
-    hop_length=512
+    hop_length=512  
 )
 
 # Generate timestamps for each frame
