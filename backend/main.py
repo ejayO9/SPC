@@ -204,7 +204,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         # Buffer for accumulating audio chunks
         audio_buffer = []
-        buffer_duration = 1.0  # Process 1 second of audio at a time
+        buffer_duration = 0.5  #chunk size
         samples_per_buffer = int(SAMPLE_RATE * buffer_duration)
         current_time_offset = 0
         

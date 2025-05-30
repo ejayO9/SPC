@@ -101,7 +101,7 @@ function App() {
   useEffect(() => {
     if (audioRef.current) {
       const updateTime = () => {
-        setCurrentTime(audioRef.current.currentTime);
+      setCurrentTime(audioRef.current.currentTime);
         
         // Send current position to backend
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -147,17 +147,14 @@ function App() {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
+          noiseSuppression: true
         } 
       });
       
       mediaStreamRef.current = stream;
       
-      // Create audio context
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
-        sampleRate: 44100
-      });
+      // Create audio context without specifying sample rate - let it use default
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       
       const source = audioContextRef.current.createMediaStreamSource(stream);
       
@@ -222,8 +219,8 @@ function App() {
 
   // Prepare data for visualization
   const prepareChartData = () => {
-    const startTime = Math.max(0, currentTime - 5); // Show 5 seconds before current time
-    const endTime = Math.min(duration, currentTime + 15); // Show 15 seconds after current time
+    const startTime = currentTime; // Start from current time (left edge)
+    const endTime = Math.min(duration, currentTime + 5); // Show only 5 seconds ahead
     
     // Filter reference pitch data
     const filteredReference = referencePitch.filter(
@@ -295,7 +292,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Karaoke Pitch Tracker</h1>
+        <h1>AI Duolingo For Singing</h1>
       </header>
       
       <main className="App-main">
@@ -319,7 +316,7 @@ function App() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="time" 
-                domain={[currentTime - 5, currentTime + 15]}
+                domain={[currentTime, currentTime + 5]}
                 tickFormatter={formatTime}
               />
               <YAxis 
@@ -332,7 +329,7 @@ function App() {
               />
               
               {/* Current time indicator */}
-              <ReferenceLine x={currentTime} stroke="#ffffff" strokeWidth={2} />
+              <ReferenceLine x={currentTime} stroke="#FF0080" strokeWidth={3} strokeDasharray="5 5" />
               
               {/* Reference pitch line */}
               <Line 

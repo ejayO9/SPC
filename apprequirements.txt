@@ -1,0 +1,10 @@
+
+So this is what happens in the app, a websocket connection is established between frontend and backend. The react frontend sends the audio sang by the user in realtime in chunks to the backend python fastapi app. 
+
+This is how the app is in the frontend - similar to the uploaded image, the song selected by the user will appear and start playing and the pitch vs timelength graph appears and there is a pointer of sorts which is visible a vertical white line in the image that indicates the current point in the song. The Y axis is the pitch where as the X-axis is the timelength of the song note/word/etc . The orange color bars that you see are the pitch and timelength of the selected song, on top of this the pitch of singing user must also be shown. So the audio sent by frontend to backend must be analysed in realtime and the pitch analysed by backend must be shared to frontend and the frontend must display this information by comparing it with the pitch of the selected song at the current point in time where the song is playing. The vertical white line in the image represents the current point in time and the line itself is stationary. Its the bars that are there that represent the song, they keep moving as the song progresses. 
+
+The pitch of the selected (previously analysed song ) and the audio that is sung by the user must be compared based on time i think because this is a literal comparison based on time and not lyrics. 
+
+So write the code for this application, write code for frontend react and backend python fastapi. Also let me know the packages and libraries and models i need to download
+
+Dont assume anything, if you have any doubts then ask me. 
