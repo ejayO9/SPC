@@ -8,3 +8,11 @@ The pitch of the selected (previously analysed song ) and the audio that is sung
 So write the code for this application, write code for frontend react and backend python fastapi. Also let me know the packages and libraries and models i need to download
 
 Dont assume anything, if you have any doubts then ask me. 
+
+-----------------
+Now, i want to build an ai singing teacher agent. The problem sections found by the frontend must be sent to the backend and the backend must take these values
+and then send the to an llm model along with a system prompt. This system prompt will contain instructions for the ai agent to give appropriate feedback to the user on the problem sections. The 
+response from the llm model must be sent to a tts model which will then speak the feedback to the user. Now, i want an ai avatar to be shown in the frontend which will speak the feedback to the user.
+This avatar must be a real human like avatar which will animate while speaking like a real human. 
+
+Brainstorm with me on what to do and how to build this feature in the present codebase. 

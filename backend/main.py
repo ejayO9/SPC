@@ -197,6 +197,12 @@ async def get_song(filename: str):
     """Serve the song file"""
     return FileResponse(f"songs/{filename}")
 
+# a post rquest to send the problem sections found by frontend to backend
+@app.post("/problem-sections")
+async def send_problem_sections(problem_sections: List[dict]):
+    """Send problem sections to backend"""
+    return {"message": "Problem sections received", "problem_sections": problem_sections}
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
