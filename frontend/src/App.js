@@ -219,8 +219,8 @@ function App() {
 
   // Prepare data for visualization
   const prepareChartData = () => {
-    const startTime = currentTime; // Start from current time (left edge)
-    const endTime = Math.min(duration, currentTime + 5); // Show only 5 seconds ahead
+    const startTime = Math.max(0, currentTime - 2); // Show 2 seconds before current time
+    const endTime = Math.min(duration, currentTime + 3); // Show 3 seconds ahead
     
     // Filter reference pitch data
     const filteredReference = referencePitch.filter(
@@ -316,7 +316,7 @@ function App() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="time" 
-                domain={[currentTime, currentTime + 5]}
+                domain={[currentTime - 2, currentTime + 3]}
                 tickFormatter={formatTime}
               />
               <YAxis 
