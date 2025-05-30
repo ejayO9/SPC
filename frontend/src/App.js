@@ -99,15 +99,20 @@ function App() {
 
   // Audio playback time update
   useEffect(() => {
-    if (audioRef.current) {
+    if (isPlaying) {
+      const startTime = Date.now();
+      const initialCurrentTime = currentTime;
+      
       const updateTime = () => {
-      setCurrentTime(audioRef.current.currentTime);
+        const elapsed = (Date.now() - startTime) / 1000;
+        const newTime = initialCurrentTime + elapsed;
+        setCurrentTime(newTime);
         
-        // Send current position to backend
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        // Send current position to backend (only after song starts)
+        if (newTime >= 0 && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({
             type: 'song_position',
-            position: audioRef.current.currentTime
+            position: newTime
           }));
         }
         
@@ -116,9 +121,7 @@ function App() {
         }
       };
       
-      if (isPlaying) {
-        updateTime();
-      }
+      updateTime();
     }
     
     return () => {
@@ -136,14 +139,21 @@ function App() {
       setProblemSections([]);
       setPerformanceComplete(false);
       
-      // Start audio playback
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        await audioRef.current.play();
-        setIsPlaying(true);
-      }
+      // Reset to initial position
+      setCurrentTime(0);
       
-      // Start microphone recording
+      // Start the graph animation immediately
+      setIsPlaying(true);
+      
+      // Delay audio start by 2 seconds (when first pitch hits reference line)
+      setTimeout(async () => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          await audioRef.current.play();
+        }
+      }, 2000);
+      
+      // Start microphone recording immediately
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -219,29 +229,43 @@ function App() {
 
   // Prepare data for visualization
   const prepareChartData = () => {
-    const startTime = Math.max(0, currentTime - 2); // Show 2 seconds before current time
-    const endTime = Math.min(duration, currentTime + 3); // Show 3 seconds ahead
+    // Guitar Hero style: 5-second window (2 seconds past + 3 seconds future)
+    // Reference line positioned at 2 seconds into the window
+    const windowStart = currentTime - 2;
+    const windowEnd = currentTime + 3;
     
-    // Filter reference pitch data
+    // Song content is offset by 2 seconds (starts at time 2 when currentTime = 0)
+    const songOffset = 2;
+    
+    // Filter reference pitch data with offset
     const filteredReference = referencePitch.filter(
-      point => point.timestamp >= startTime && point.timestamp <= endTime
+      point => {
+        const displayTime = point.timestamp + songOffset;
+        return displayTime >= windowStart && displayTime <= windowEnd;
+      }
     );
     
-    // Filter user pitch data
+    // Filter user pitch data with offset
     const filteredUser = userPitchData.filter(
-      point => point.timestamp >= startTime && point.timestamp <= endTime
+      point => {
+        const displayTime = point.timestamp + songOffset;
+        return displayTime >= windowStart && displayTime <= windowEnd;
+      }
     );
     
     // Combine data for chart
     const chartData = [];
     const timeStep = 0.05; // 50ms intervals
     
-    for (let time = startTime; time <= endTime; time += timeStep) {
+    for (let time = windowStart; time <= windowEnd; time += timeStep) {
+      // Find reference point (accounting for offset)
       const refPoint = filteredReference.find(
-        p => Math.abs(p.timestamp - time) < timeStep / 2
+        p => Math.abs((p.timestamp + songOffset) - time) < timeStep / 2
       );
+      
+      // Find user point (accounting for offset)
       const userPoint = filteredUser.find(
-        p => Math.abs(p.timestamp - time) < timeStep / 2
+        p => Math.abs((p.timestamp + songOffset) - time) < timeStep / 2
       );
       
       chartData.push({
@@ -328,7 +352,7 @@ function App() {
                 formatter={(value) => value ? `${value.toFixed(1)} Hz` : 'N/A'}
               />
               
-              {/* Current time indicator */}
+              {/* Reference line - fixed at current evaluation position */}
               <ReferenceLine x={currentTime} stroke="#FF0080" strokeWidth={3} strokeDasharray="5 5" />
               
               {/* Reference pitch line */}
