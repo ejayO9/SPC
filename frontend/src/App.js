@@ -22,6 +22,7 @@ function App() {
   const processorRef = useRef(null);
   const wsRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const noiseGateRef = useRef({ threshold: 0.01, ratio: 0.1 });
 
   // Load reference pitch data
   useEffect(() => {
@@ -157,7 +158,12 @@ function App() {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
-          noiseSuppression: true
+          noiseSuppression: true,
+          autoGainControl: true,
+          highpassFilter: true,
+          channelCount: 1,
+          sampleRate: 48000,
+          sampleSize: 16
         } 
       });
       
@@ -175,7 +181,11 @@ function App() {
       processor.onaudioprocess = (e) => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           const inputData = e.inputBuffer.getChannelData(0);
-          const float32Array = new Float32Array(inputData);
+          
+          // Apply advanced noise reduction
+          const processedData = applyNoiseReduction(inputData);
+          
+          const float32Array = new Float32Array(processedData);
           
           // Convert to base64 for transmission
           const base64Audio = btoa(String.fromCharCode(...new Uint8Array(float32Array.buffer)));
@@ -309,6 +319,46 @@ function App() {
     return grouped.filter(section => 
       section.endTime - section.startTime > 0.5
     );
+  };
+
+  // Advanced noise cancellation function
+  const applyNoiseReduction = (audioData) => {
+    const length = audioData.length;
+    const processedData = new Float32Array(length);
+    
+    // Calculate RMS (Root Mean Square) for volume analysis
+    let rms = 0;
+    for (let i = 0; i < length; i++) {
+      rms += audioData[i] * audioData[i];
+    }
+    rms = Math.sqrt(rms / length);
+    
+    // Dynamic threshold based on signal strength
+    const dynamicThreshold = Math.max(0.005, rms * 0.1);
+    
+    // Apply noise gate with attack/release
+    for (let i = 0; i < length; i++) {
+      const sample = audioData[i];
+      const amplitude = Math.abs(sample);
+      
+      if (amplitude > dynamicThreshold) {
+        // Signal above threshold - apply gentle compression
+        processedData[i] = sample * 0.8;
+      } else {
+        // Signal below threshold - apply noise gate
+        processedData[i] = sample * 0.1;
+      }
+    }
+    
+    // Apply simple high-pass filtering to remove low-frequency noise
+    if (length > 2) {
+      for (let i = 1; i < length - 1; i++) {
+        // Simple high-pass filter (removes low frequency rumble)
+        processedData[i] = processedData[i] - 0.3 * (processedData[i-1] + processedData[i+1]) / 2;
+      }
+    }
+    
+    return processedData;
   };
 
   const chartData = prepareChartData();
