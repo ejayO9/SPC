@@ -610,7 +610,6 @@ function App() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
 
         {performanceComplete && (
           <div className="performance-analysis">
