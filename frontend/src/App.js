@@ -207,7 +207,7 @@ function App() {
       const source = audioContextRef.current.createMediaStreamSource(stream);
       
       // Create script processor for capturing audio chunks
-      const processor = audioContextRef.current.createScriptProcessor(4096, 1, 1);
+      const processor = audioContextRef.current.createScriptProcessor(16384, 1, 1);
       processorRef.current = processor;
       
       processor.onaudioprocess = (e) => {
