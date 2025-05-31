@@ -182,10 +182,29 @@ def find_problem_sections(comparisons: List[dict], threshold: float = 30.0, prob
                     'direction': direction
                 }
             else:
-                current_section['end_time'] = comp['timestamp']
-                current_section['avg_deviation'] = (
-                    current_section['avg_deviation'] + comp['deviation_percentage']
-                ) / 2
+                # Determine direction for this comparison point
+                ref_pitch = comp.get('reference_pitch')
+                user_pitch = comp.get('user_pitch')
+                if ref_pitch is not None and user_pitch is not None:
+                    comp_direction = 'above' if user_pitch > ref_pitch else 'below'
+                else:
+                    comp_direction = 'unknown'
+                if comp_direction == current_section['direction']:
+                    # Same direction: extend current section
+                    current_section['end_time'] = comp['timestamp']
+                    current_section['avg_deviation'] = (
+                        current_section['avg_deviation'] + comp['deviation_percentage']
+                    ) / 2
+                else:
+                    # Direction changed: close previous section and start a new one
+                    if current_section['end_time'] - current_section['start_time'] > problem_duration:
+                        problem_sections.append(current_section)
+                    current_section = {
+                        'start_time': comp['timestamp'],
+                        'end_time': comp['timestamp'],
+                        'avg_deviation': comp['deviation_percentage'],
+                        'direction': comp_direction
+                    }
         else:
             if current_section is not None:
                 # Only add sections longer than problem_duration seconds
