@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+import os
 
 from livekit import agents
 from livekit.agents import AgentSession, Agent, RoomInputOptions
@@ -18,7 +19,13 @@ tavus_api_key = ["aa397fc44131439fba2eef17ea0b4851"]
 
 class Assistant(Agent):
     def __init__(self) -> None:
-        super().__init__(instructions="You are a helpful voice AI assistant.")
+        super().__init__(instructions='''
+                         You are a helpful voice AI assistant.
+                         You are currently in a livekit room with a user.
+                         You are able to see the user's video and hear their voice.
+                         You are also able to see the room's text chat.
+                         
+                         ''')
 
 
 async def entrypoint(ctx: agents.JobContext):
@@ -30,11 +37,13 @@ async def entrypoint(ctx: agents.JobContext):
         turn_detection=MultilingualModel(),
     )
     
+    # Connect to the room first
+    await ctx.connect()
     
     avatar = tavus.AvatarSession(
         api_key=tavus_api_key[0],
-        replica_id="p2fbd605",  # ID of the Tavus replica to use
-        persona_id="r4c41453d2",  # ID of the Tavus persona to use (see preceding section for configuration details)
+        replica_id="r6ae5b6efc9d",  # ID of the Tavus replica to use
+        persona_id="pf90e1f531a1",  # ID of the Tavus persona to use (see preceding section for configuration details)
     )
     
     # Start the avatar and wait for it to join
@@ -51,8 +60,6 @@ async def entrypoint(ctx: agents.JobContext):
             audio_enabled=False,
         ),
     )
-
-    await ctx.connect()
 
     await session.generate_reply(
         instructions="Greet the user and offer your assistance."

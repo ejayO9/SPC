@@ -11,6 +11,8 @@ import soundfile as sf
 import io
 import base64
 import logging
+from fastapi import HTTPException
+from livekit_token_generator import generate_livekit_token
 
 # Configure logging
 logging.basicConfig(
@@ -276,6 +278,22 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {e}")
         manager.disconnect(websocket)
+
+class TokenRequest(BaseModel):
+    room_name: str = "avatar-room"
+    participant_name: str = "user"
+
+@app.post("/generate-livekit-token")
+async def generate_token(request: TokenRequest):
+    try:
+        token = generate_livekit_token(
+            room_name=request.room_name,
+            participant_name=request.participant_name
+        )
+        return {"token": token}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn

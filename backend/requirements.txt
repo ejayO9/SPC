@@ -6,6 +6,7 @@ librosa
 soundfile
 pydantic
 python-multipart
+python-dotenv
 livekit==1.0.8
 livekit-agents==1.0.23
 livekit-api==1.0.2
@@ -18,3 +19,4 @@ livekit-plugins-silero==1.0.23
 livekit-plugins-turn-detector==1.0.23
 livekit-plugins-tavus
 livekit-protocol==1.0.3
+tensorflow

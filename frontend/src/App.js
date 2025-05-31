@@ -2,9 +2,15 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import AvatarAgent from './AvatarAgent';
 
 const BACKEND_URL = 'http://localhost:8000';
 const WS_URL = 'ws://localhost:8000/ws';
+
+// LiveKit configuration - replace with your actual values
+const LIVEKIT_SERVER_URL = process.env.REACT_APP_LIVEKIT_SERVER_URL || 'wss://your-livekit-server.com';
+const LIVEKIT_API_KEY = process.env.REACT_APP_LIVEKIT_API_KEY || 'your-api-key';
+const LIVEKIT_API_SECRET = process.env.REACT_APP_LIVEKIT_API_SECRET || 'your-api-secret';
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
@@ -15,6 +21,8 @@ function App() {
   const [duration, setDuration] = useState(0);
   const [problemSections, setProblemSections] = useState([]);
   const [performanceComplete, setPerformanceComplete] = useState(false);
+  const [liveKitToken, setLiveKitToken] = useState(null);
+  const [showAvatar, setShowAvatar] = useState(false);
   
   const audioRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -457,9 +465,65 @@ function App() {
           src={`${BACKEND_URL}/song/song.mp3`}
           onEnded={stopPerformance}
         />
+        
+        {/* Avatar Agent Section */}
+        <div className="avatar-section">
+          {!showAvatar ? (
+            <button 
+              className="avatar-toggle-button"
+              onClick={() => setShowAvatar(true)}
+            >
+              Show AI Assistant Avatar
+            </button>
+          ) : (
+            <>
+              <button 
+                className="avatar-toggle-button hide"
+                onClick={() => setShowAvatar(false)}
+              >
+                Hide Avatar
+              </button>
+              {liveKitToken ? (
+                <AvatarAgent 
+                  token={liveKitToken}
+                  serverUrl={LIVEKIT_SERVER_URL}
+                />
+              ) : (
+                <div className="avatar-token-info">
+                  <p>To connect to the avatar, you need a LiveKit token.</p>
+                  <p>Please configure your LiveKit credentials in the environment variables.</p>
+                  <button 
+                    className="generate-token-button"
+                    onClick={generateDemoToken}
+                  >
+                    Generate Demo Token
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </main>
     </div>
   );
+  
+  // Function to generate a demo token (placeholder - replace with actual token generation)
+  async function generateDemoToken() {
+    try {
+      // Call the backend endpoint to generate a token
+      const response = await axios.post(`${BACKEND_URL}/generate-livekit-token`, {
+        room_name: "avatar-room",
+        participant_name: "user"
+      });
+      
+      setLiveKitToken(response.data.token);
+      console.log('LiveKit token generated successfully');
+    } catch (error) {
+      console.error('Error generating token:', error);
+      // Show error message to user
+      alert('Failed to generate LiveKit token. Please ensure the backend is running and LiveKit credentials are configured.');
+    }
+  }
 }
 
 export default App;
