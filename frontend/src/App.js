@@ -455,15 +455,18 @@ function App() {
           </div>
         </div>
 
-        {/* Central Area: Webcam Feed + Avatar */}
+        {/* Central Area: Webcam Feed */}
         <div className="central-area">
           {/* Webcam Feed - Placeholder for now */}
           <div className="webcam-feed">
             {/* TODO: Implement webcam feed here */}
             <video ref={webcamVideoRef} autoPlay playsInline muted className="webcam-video-element"></video>
           </div>
+        </div>
 
-          {/* Avatar Agent Section - Bottom Right - Always visible container */}
+        {/* Visualization Container - Contains Avatar and Pitch Visualizer */}
+        <div className="visualization-container">
+          {/* Avatar Agent Section - Positioned absolutely within visualization-container */}
           <div className="avatar-section-container">
             {showAvatar && liveKitToken ? (
               <AvatarAgent
@@ -481,53 +484,50 @@ function App() {
               </div>
             )}
           </div>
-        </div>
 
-        {/* Controls - Below Central Area, Above Pitch Graph */}
+          {/* Pitch Visualizer - Bottom */}
+          <div className="pitch-visualizer-container">
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="time"
+                  domain={[currentTime - 2, currentTime + 3]}
+                  tickFormatter={formatTime}
+                />
+                <YAxis
+                  domain={[80, 400]} // Adjusted Y-axis for typical vocal range
+                  label={{ value: 'Pitch (Hz)', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip
+                  labelFormatter={(value) => `Time: ${formatTime(value)}`}
+                  formatter={(value) => value ? `${value.toFixed(1)} Hz` : 'N/A'}
+                />
 
+                <ReferenceLine x={currentTime} stroke="#FF0080" strokeWidth={3} strokeDasharray="5 5" />
 
-        {/* Pitch Visualizer - Bottom */}
-        <div className="pitch-visualizer-container">
-          <ResponsiveContainer width="100%" height={250}> {/* Adjusted height */}
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="time"
-                domain={[currentTime - 2, currentTime + 3]}
-                tickFormatter={formatTime}
-              />
-              <YAxis
-                domain={[80, 400]} // Adjusted Y-axis for typical vocal range
-                label={{ value: 'Pitch (Hz)', angle: -90, position: 'insideLeft' }}
-              />
-              <Tooltip
-                labelFormatter={(value) => `Time: ${formatTime(value)}`}
-                formatter={(value) => value ? `${value.toFixed(1)} Hz` : 'N/A'}
-              />
+                <Line
+                  type="monotone"
+                  dataKey="reference"
+                  stroke="#FFA500"
+                  strokeWidth={3}
+                  dot={false}
+                  connectNulls={false}
+                  name="Original"
+                />
 
-              <ReferenceLine x={currentTime} stroke="#FF0080" strokeWidth={3} strokeDasharray="5 5" />
-
-              <Line
-                type="monotone"
-                dataKey="reference"
-                stroke="#FFA500"
-                strokeWidth={3}
-                dot={false}
-                connectNulls={false}
-                name="Original"
-              />
-
-              <Line
-                type="monotone"
-                dataKey="user"
-                stroke="#00FF00"
-                strokeWidth={2}
-                dot={false}
-                connectNulls={false}
-                name="Your Voice"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+                <Line
+                  type="monotone"
+                  dataKey="user"
+                  stroke="#00FF00"
+                  strokeWidth={2}
+                  dot={false}
+                  connectNulls={false}
+                  name="Your Voice"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {performanceComplete && (
