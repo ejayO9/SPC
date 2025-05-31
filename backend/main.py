@@ -209,6 +209,45 @@ async def send_problem_sections(problem_sections: List[dict]):
     """Send problem sections to backend"""
     return {"message": "Problem sections received", "problem_sections": problem_sections}
 
+@app.post("/analyze-performance")
+async def analyze_performance_endpoint(problem_sections_payload: List[dict]):
+    """Analyzes performance data and returns problem sections."""
+    logger.info(f"Received problem sections for analysis: {problem_sections_payload}")
+    
+    # Call the existing function to find problem sections
+    # Assuming the frontend sends data in the format expected by find_problem_sections
+    # which is a list of comparison dicts, not already processed problem sections.
+    # For now, let's assume the frontend sends the raw comparisons that would have been used to generate problemSections on the frontend.
+    # If problemSections from frontend is already processed, this needs adjustment.
+    
+    # If the frontend is sending the *output* of its own problem section detection, 
+    # and we want to re-run a *different* analysis on the backend or just log it,
+    # then we wouldn't call find_problem_sections with it directly.
+    # Based on the request "frontend should send this problemSections data to a backend api which will run the find_problem_sections function"
+    # it implies the frontend's `problemSections` state *is* the input for the backend's `find_problem_sections`.
+    # This seems a bit redundant as `find_problem_sections` expects `comparisons` not `problem_sections`.
+    # Let's clarify this: The `problemSections` in frontend is derived from `comparisons` on the frontend.
+    # `find_problem_sections` in backend expects `comparisons` (which is `List[PitchComparison]`).
+    # The current `problemSections` in `App.js` is a list of objects with `timestamp` and `deviation_percentage`.
+    # The backend `find_problem_sections` expects `comparisons` which also have `reference_pitch` and `user_pitch`.
+
+    # For the purpose of this task, I will assume that the frontend's `problemSections` state
+    # (which contains items with 'timestamp' and 'deviation_percentage') is what needs to be passed
+    # to the backend's `find_problem_sections`. The backend function might need adjustment
+    # or we need to clarify what exactly `problemSections` from frontend contains.
+    # Given the current structure of `find_problem_sections`, it expects a list of comparison dicts.
+    # The `problemSections` state in the frontend is a list of individual problem *points*, not aggregated sections.
+    # Let's assume the `problemSections` from the frontend is actually the `comparisons` data.
+
+    # The `problem_sections_payload` is the `problemSections` from the frontend.
+    # The backend function `find_problem_sections` expects a list of comparison objects.
+    # The frontend's `problemSections` state is populated with items from `data.comparisons` where deviation > 30.
+    # So, `problemSections` on the frontend IS a list of comparison-like objects (subset of them).
+    analyzed_sections = find_problem_sections(problem_sections_payload) 
+    # The original request was to print the response.
+    print("Analyzed performance sections:", analyzed_sections)
+    return {"message": "Performance analyzed", "analyzed_sections": analyzed_sections}
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)

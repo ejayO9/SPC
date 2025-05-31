@@ -219,7 +219,8 @@ function App() {
           const inputData = e.inputBuffer.getChannelData(0);
           
           // Apply advanced noise reduction
-          const processedData = applyNoiseReduction(inputData);
+          // const processedData = applyNoiseReduction(inputData);
+          const processedData = inputData;
           
           const float32Array = new Float32Array(processedData);
           
@@ -271,6 +272,20 @@ function App() {
     }
     
     setIsRecording(false);
+
+    // Analyze performance after stopping
+    if (performanceComplete) {
+      analyzePerformance();
+    }
+  };
+
+  const analyzePerformance = async () => {
+    try {
+      const response = await axios.post(`${BACKEND_URL}/analyze-performance`, problemSections);
+      console.log('Performance analysis response:', response.data);
+    } catch (error) {
+      console.error('Error analyzing performance:', error);
+    }
   };
 
   // Prepare data for visualization
