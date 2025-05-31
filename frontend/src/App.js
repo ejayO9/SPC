@@ -402,7 +402,7 @@ function App() {
                 tickFormatter={formatTime}
               />
               <YAxis 
-                domain={[100, 800]}
+                domain={[100, 350]}
                 label={{ value: 'Pitch (Hz)', angle: -90, position: 'insideLeft' }}
               />
               <Tooltip 
