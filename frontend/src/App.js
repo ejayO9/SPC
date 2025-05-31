@@ -31,6 +31,34 @@ function App() {
   const wsRef = useRef(null);
   const animationFrameRef = useRef(null);
   const noiseGateRef = useRef({ threshold: 0.01, ratio: 0.1 });
+  const webcamVideoRef = useRef(null); // Ref for the webcam video element
+
+  // Initialize webcam feed
+  useEffect(() => {
+    const enableWebcam = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (webcamVideoRef.current) {
+          webcamVideoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error("Error accessing webcam: ", err);
+        // Optionally, display an error message to the user
+      }
+    };
+
+    enableWebcam();
+
+    // Cleanup: stop webcam tracks when component unmounts or before re-running effect
+    return () => {
+      if (webcamVideoRef.current && webcamVideoRef.current.srcObject) {
+        const stream = webcamVideoRef.current.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+        webcamVideoRef.current.srcObject = null;
+      }
+    };
+  }, []); // Empty dependency array means this runs once on mount and cleanup on unmount
 
   // Load reference pitch data
   useEffect(() => {
@@ -369,16 +397,58 @@ function App() {
     return processedData;
   };
 
+  const handleShowAvatarClick = async () => {
+    let currentToken = liveKitToken;
+    if (!currentToken) {
+      currentToken = await generateDemoToken();
+    }
+    if (currentToken) {
+      setShowAvatar(true);
+    }
+  };
+
   const chartData = prepareChartData();
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>AI Duolingo For Singing</h1>
+        {/* Indian AI-dol Title */}
+        <div className="main-title">
+          Indian <span className="ai-highlight">AI-dol</span>
+        </div>
       </header>
       
-      <main className="App-main">
-        <div className="controls">
+      <main className="App-main-content">
+        {/* Central Area: Webcam Feed + Avatar */}
+        <div className="central-area">
+          {/* Webcam Feed - Placeholder for now */}
+          <div className="webcam-feed">
+            {/* TODO: Implement webcam feed here */}
+            <video ref={webcamVideoRef} autoPlay playsInline muted className="webcam-video-element"></video>
+          </div>
+
+          {/* Avatar Agent Section - Bottom Right - Always visible container */}
+          <div className="avatar-section-container">
+            {showAvatar && liveKitToken ? (
+              <AvatarAgent 
+                token={liveKitToken}
+                serverUrl={LIVEKIT_SERVER_URL}
+              />
+            ) : (
+              <div className="avatar-placeholder">
+                <button 
+                  className="show-avatar-button-inline"
+                  onClick={handleShowAvatarClick}
+                >
+                  Show AI Assistant
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Controls - Below Central Area, Above Pitch Graph */}
+        <div className="controls-container">
           <button 
             onClick={isRecording ? stopPerformance : startPerformance}
             className={`control-button ${isRecording ? 'stop' : 'start'}`}
@@ -391,10 +461,10 @@ function App() {
           </div>
         </div>
         
-        <div className="pitch-visualizer">
-          <h2>Pitch Comparison</h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+        {/* Pitch Visualizer - Bottom */}
+        <div className="pitch-visualizer-container">
+          <ResponsiveContainer width="100%" height={250}> {/* Adjusted height */}
+            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="time" 
@@ -402,7 +472,7 @@ function App() {
                 tickFormatter={formatTime}
               />
               <YAxis 
-                domain={[100, 350]}
+                domain={[80, 400]} // Adjusted Y-axis for typical vocal range
                 label={{ value: 'Pitch (Hz)', angle: -90, position: 'insideLeft' }}
               />
               <Tooltip 
@@ -410,10 +480,8 @@ function App() {
                 formatter={(value) => value ? `${value.toFixed(1)} Hz` : 'N/A'}
               />
               
-              {/* Reference line - fixed at current evaluation position */}
               <ReferenceLine x={currentTime} stroke="#FF0080" strokeWidth={3} strokeDasharray="5 5" />
               
-              {/* Reference pitch line */}
               <Line 
                 type="monotone" 
                 dataKey="reference" 
@@ -424,7 +492,6 @@ function App() {
                 name="Original"
               />
               
-              {/* User pitch line */}
               <Line 
                 type="monotone" 
                 dataKey="user" 
@@ -465,44 +532,6 @@ function App() {
           src={`${BACKEND_URL}/song/song-music.mp3`}
           onEnded={stopPerformance}
         />
-        
-        {/* Avatar Agent Section */}
-        <div className="avatar-section">
-          {!showAvatar ? (
-            <button 
-              className="avatar-toggle-button"
-              onClick={() => setShowAvatar(true)}
-            >
-              Show AI Assistant Avatar
-            </button>
-          ) : (
-            <>
-              <button 
-                className="avatar-toggle-button hide"
-                onClick={() => setShowAvatar(false)}
-              >
-                Hide Avatar
-              </button>
-              {liveKitToken ? (
-                <AvatarAgent 
-                  token={liveKitToken}
-                  serverUrl={LIVEKIT_SERVER_URL}
-                />
-              ) : (
-                <div className="avatar-token-info">
-                  <p>To connect to the avatar, you need a LiveKit token.</p>
-                  <p>Please configure your LiveKit credentials in the environment variables.</p>
-                  <button 
-                    className="generate-token-button"
-                    onClick={generateDemoToken}
-                  >
-                    Generate Demo Token
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
       </main>
     </div>
   );
@@ -518,10 +547,12 @@ function App() {
       
       setLiveKitToken(response.data.token);
       console.log('LiveKit token generated successfully');
+      return response.data.token; // Return token for immediate use
     } catch (error) {
       console.error('Error generating token:', error);
       // Show error message to user
       alert('Failed to generate LiveKit token. Please ensure the backend is running and LiveKit credentials are configured.');
+      return null;
     }
   }
 }
