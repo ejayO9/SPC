@@ -23,6 +23,7 @@ function App() {
   const [performanceComplete, setPerformanceComplete] = useState(false);
   const [liveKitToken, setLiveKitToken] = useState(null);
   const [showAvatar, setShowAvatar] = useState(false);
+  const [analyzedSections, setAnalyzedSections] = useState([]);
   
   const audioRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -111,6 +112,10 @@ function App() {
           }
         } else if (data.type === 'performance_complete') {
           setPerformanceComplete(true);
+          console.log('Received performance_complete, closing WebSocket');
+          if (wsRef.current) {
+            wsRef.current.close();
+          }
         }
       };
       
@@ -121,17 +126,7 @@ function App() {
       wsRef.current.onclose = () => {
         console.log('WebSocket disconnected');
       };
-    } else {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
     }
-    
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-    };
   }, [isRecording]);
 
   // Audio playback time update
@@ -171,6 +166,7 @@ function App() {
   // Start recording and playing
   const startPerformance = async () => {
     try {
+      console.log("start here 3")
       // Reset data
       setUserPitchData([]);
       setProblemSections([]);
@@ -272,21 +268,27 @@ function App() {
     }
     
     setIsRecording(false);
-
-    // Analyze performance after stopping
-    if (performanceComplete) {
-      analyzePerformance();
-    }
+    console.log("start here")
   };
 
-  const analyzePerformance = async () => {
+  const analyzePerformance = useCallback(async () => {
     try {
+      console.log("analyzePerformance called. problemSections:", problemSections);
       const response = await axios.post(`${BACKEND_URL}/analyze-performance`, problemSections);
       console.log('Performance analysis response:', response.data);
+      setAnalyzedSections(response.data.analyzed_sections);
     } catch (error) {
       console.error('Error analyzing performance:', error);
     }
-  };
+  }, [problemSections, BACKEND_URL]);
+
+  // Effect to run analysis when performance is complete and recording has stopped
+  useEffect(() => {
+    if (performanceComplete && !isRecording) {
+      console.log("useEffect: performanceComplete is true and isRecording is false. Calling analyzePerformance.");
+      analyzePerformance();
+    }
+  }, [performanceComplete, isRecording, analyzePerformance]);
 
   // Prepare data for visualization
   const prepareChartData = () => {
@@ -523,14 +525,14 @@ function App() {
         {performanceComplete && (
           <div className="performance-analysis">
             <h2>Performance Analysis</h2>
-            {getCurrentProblemSections().length > 0 ? (
+            {analyzedSections.length > 0 ? (
               <div className="problem-sections">
                 <h3>Areas for Improvement:</h3>
                 <ul>
-                  {getCurrentProblemSections().map((section, index) => (
+                  {analyzedSections.map((section, index) => (
                     <li key={index}>
-                      {formatTime(section.startTime)} - {formatTime(section.endTime)}: 
-                      Average deviation {section.avgDeviation.toFixed(1)}%
+                      {formatTime(section.start_time)} - {formatTime(section.end_time)}: 
+                      Average deviation {section.avg_deviation.toFixed(1)}% ({section.direction})
                     </li>
                   ))}
                 </ul>
