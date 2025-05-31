@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@heygen/streaming-avatar": "^2.0.16",
     "@livekit/components-react": "^2.9.9",
     "@livekit/components-styles": "^1.1.6",
     "@testing-library/jest-dom": "^5.17.0",

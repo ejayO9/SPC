@@ -23,6 +23,9 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+# Global variable to store the latest analysis data
+latest_analyzed_sections: Optional[List[dict]] = None
+
 logger.info("Starting ai singing assistant API")
 
 # Configure CORS
@@ -250,7 +253,20 @@ async def analyze_performance_endpoint(problem_sections_payload: List[dict]):
     analyzed_sections = find_problem_sections(problem_sections_payload) 
     # The original request was to print the response.
     print("Analyzed performance sections:", analyzed_sections)
+    
+    # Store the analyzed sections globally
+    global latest_analyzed_sections
+    latest_analyzed_sections = analyzed_sections
+    
     return {"message": "Performance analyzed", "analyzed_sections": analyzed_sections}
+
+@app.get("/get-latest-analysis")
+async def get_latest_analysis_data():
+    """Get the latest analyzed performance data"""
+    global latest_analyzed_sections
+    if latest_analyzed_sections is None:
+        raise HTTPException(status_code=404, detail="No analysis data available yet.")
+    return {"analyzed_sections": latest_analyzed_sections}
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
