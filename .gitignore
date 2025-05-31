@@ -7,3 +7,7 @@ backend/.env
 #frontend 
 frontend/node_modules
 frontend/.env
+
+avatar-livekit/venv
+avatar-livekit/.env
+
