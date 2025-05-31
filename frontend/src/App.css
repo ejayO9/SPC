@@ -61,6 +61,8 @@
 }
 
 .central-area {
+  position: relative;
+  z-index: 1; /* Lower than visualization-container */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,8 +78,8 @@
   width: 80%;
   max-width: 640px;
   aspect-ratio: 16 / 9;
-  background-color: #000000;
-  border: 3px solid #4cc9f0;
+  border: 6px solid #021B55;
+  background-color: #050521;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -97,12 +99,14 @@
 
 .avatar-section-container {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
+  top: -10px;
+  right: 0;
+  z-index: 20; /* Higher than pitch-visualizer-container */
+  transform: translateY(-100%); /* Move up by its own height */
   width: 320px;
   height: 200px;
-  background-color: #000000;
-  border: 2px solid #4a4a4a;
+  border: 6px solid #021B55;
+  background-color: #050521;
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
   z-index: 10;
@@ -170,11 +174,13 @@
 }
 
 .pitch-visualizer-container {
+  width: 100%;
+  position: relative;
+  z-index: 10;
   border-radius: 10px;
-  border: 8px solid #021B55;
+  border: 6px solid #021B55;
   background-color: #050521;
   padding: 20px 20px 10px 20px;
-  width: 100%;
 }
 
 .pitch-visualizer-container h2 {
@@ -182,6 +188,12 @@
   margin-bottom: 15px;
   color: #4cc9f0;
   font-size: 1.5rem;
+}
+
+.visualization-container {
+  position: relative;
+  width: 100%;
+  z-index: 10; /* Higher than central-area */
 }
 
 .performance-analysis {
