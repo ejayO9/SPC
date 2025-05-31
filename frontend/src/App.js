@@ -124,19 +124,28 @@ function App() {
         const data = JSON.parse(event.data);
 
         if (data.type === 'pitch_update') {
-          // Update user pitch data (this part is always active)
-          const newUserPitch = data.user_pitch.map(point => ({
+          // Update user pitch data
+          const adjustedPitchData = data.user_pitch.map(point => ({
             ...point,
             timestamp: point.timestamp + data.time_offset
           }));
-          setUserPitchData(prev => [...prev, ...newUserPitch]);
+          setUserPitchData(prevData => [...prevData, ...adjustedPitchData]);
 
-          // Only process comparisons for memes if no meme cycle is active
+          // Find problems in comparisons
+          const problems = data.comparisons.filter(c => 
+            c.deviation_percentage !== null && c.deviation_percentage > 30
+          );
+
+          // Add problems to problemSections state
+          setProblemSections(prevSections => [...prevSections, ...problems]);
+          
+          // Log for debugging
+          if (problems.length > 0) {
+            console.log(`Found ${problems.length} problem points at time ${data.time_offset}`, problems);
+          }
+
+          // Meme trigger logic only when not in a meme cycle
           if (!isMemeCycleActive) {
-            const problems = data.comparisons.filter(comp =>
-              comp.deviation_percentage && comp.deviation_percentage > 30
-            );
-
             if (problems.length > 0) {
               const newBadCount = consecutiveBadCount + problems.length;
               setConsecutiveBadCount(newBadCount);
@@ -346,9 +355,13 @@ function App() {
 
   const analyzePerformance = useCallback(async () => {
     try {
-      console.log("analyzePerformance called. problemSections:", problemSections);
+      console.log("analyzePerformance called. Total problemSections:", problemSections.length);
+      console.log("First few problem sections:", problemSections.slice(0, 5));
+      
       const response = await axios.post(`${BACKEND_URL}/analyze-performance`, problemSections);
       console.log('Performance analysis response:', response.data);
+      console.log('Analyzed sections received:', response.data.analyzed_sections);
+      
       setAnalyzedSections(response.data.analyzed_sections);
     } catch (error) {
       console.error('Error analyzing performance:', error);
