@@ -98,6 +98,10 @@ def detect_pitch_from_audio(audio_data: np.ndarray, sr: int = SAMPLE_RATE) -> Li
         # Create pitch data
         pitch_data = []
         for t, pitch in zip(times, f0):
+            # Cap pitch at 350 Hz if it exceeds that value
+            if not np.isnan(pitch) and pitch > 350:
+                pitch = 350.0
+            
             pitch_data.append({
                 "timestamp": float(t),
                 "pitch": float(pitch) if not np.isnan(pitch) else None

@@ -15,8 +15,8 @@ from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 load_dotenv()
 
-tavus_api_key = ["aa397fc44131439fba2eef17ea0b4851"]
-
+tavus_api_key = ["aa397fc44131439fba2eef17ea0b4851","bd1ba58aab254f31b4a2d028c5a4babe"]
+print(len(tavus_api_key) - 1)
 class Assistant(Agent):
     def __init__(self) -> None:
         super().__init__(instructions='''
@@ -45,9 +45,9 @@ async def entrypoint(ctx: agents.JobContext):
     await ctx.connect()
     
     avatar = tavus.AvatarSession(
-        api_key=tavus_api_key[0],
+        api_key=tavus_api_key[len(tavus_api_key) - 1],
         replica_id="r79e1c033f",  # ID of the Tavus replica to use
-        persona_id="p902fda963fa",  # ID of the Tavus persona to use (see preceding section for configuration details)
+        persona_id="p83b6ee0774b",  # ID of the Tavus persona to use (see preceding section for configuration details)
     )
     
     # Start the avatar and wait for it to join
