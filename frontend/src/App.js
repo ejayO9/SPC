@@ -462,7 +462,7 @@ function App() {
         {/* Hidden audio element */}
         <audio 
           ref={audioRef} 
-          src={`${BACKEND_URL}/song/song.mp3`}
+          src={`${BACKEND_URL}/song/song-music.mp3`}
           onEnded={stopPerformance}
         />
         

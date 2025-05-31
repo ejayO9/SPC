@@ -29,12 +29,16 @@ class Assistant(Agent):
 
 
 async def entrypoint(ctx: agents.JobContext):
+    # session = AgentSession(
+    #     stt=deepgram.STT(model="nova-3", language="multi"),
+    #     llm=openai.LLM(model="gpt-4o-mini"),
+    #     tts=cartesia.TTS(),
+    #     vad=silero.VAD.load(),
+    #     turn_detection=MultilingualModel(),
+    # )
+    
     session = AgentSession(
-        stt=deepgram.STT(model="nova-3", language="multi"),
-        llm=openai.LLM(model="gpt-4o-mini"),
-        tts=cartesia.TTS(),
-        vad=silero.VAD.load(),
-        turn_detection=MultilingualModel(),
+        llm=openai.realtime.RealtimeModel(voice="alloy"),
     )
     
     # Connect to the room first
@@ -42,8 +46,8 @@ async def entrypoint(ctx: agents.JobContext):
     
     avatar = tavus.AvatarSession(
         api_key=tavus_api_key[0],
-        replica_id="r6ae5b6efc9d",  # ID of the Tavus replica to use
-        persona_id="pf90e1f531a1",  # ID of the Tavus persona to use (see preceding section for configuration details)
+        replica_id="r79e1c033f",  # ID of the Tavus replica to use
+        persona_id="p902fda963fa",  # ID of the Tavus persona to use (see preceding section for configuration details)
     )
     
     # Start the avatar and wait for it to join
@@ -57,7 +61,7 @@ async def entrypoint(ctx: agents.JobContext):
             # - If self-hosting, omit this parameter
             # - For telephony applications, use `BVCTelephony` for best results
             noise_cancellation=noise_cancellation.BVC(), 
-            audio_enabled=False,
+            audio_enabled=True,
         ),
     )
 
