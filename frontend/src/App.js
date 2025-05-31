@@ -3,6 +3,7 @@ import './App.css';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import AvatarAgent from './AvatarAgent';
+import KaraokeLyrics from './KaraokeLyrics';
 
 const BACKEND_URL = 'http://localhost:8000';
 const WS_URL = 'ws://localhost:8000/ws';
@@ -566,6 +567,12 @@ function App() {
         </div>
 
         {/* Controls - Below Central Area, Above Pitch Graph */}
+
+        {/* Karaoke Lyrics Display */}
+        <KaraokeLyrics 
+          currentTime={currentTime >= 2 ? currentTime - 2 : 0} 
+          isPlaying={isPlaying}
+        />
 
           {/* Pitch Visualizer - Bottom */}
           <div className="pitch-visualizer-container">

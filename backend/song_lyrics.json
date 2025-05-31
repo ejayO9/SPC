@@ -1,0 +1,129 @@
+{
+  "song_title": "I Want It That Way",
+  "artist": "Backstreet Boys",
+  "duration": 19.706,
+  "lyrics": [
+    {
+      "id": 1,
+      "text": "You are my fire",
+      "start_time": 0.846,
+      "end_time": 4.876,
+      "words": [
+        {
+          "text": "You",
+          "start_time": 0.846,
+          "end_time": 1.300
+        },
+        {
+          "text": "are",
+          "start_time": 1.300,
+          "end_time": 2.100
+        },
+        {
+          "text": "my",
+          "start_time": 3.045,
+          "end_time": 3.585
+        },
+        {
+          "text": "fire",
+          "start_time": 3.815,
+          "end_time": 4.876
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "The one desire",
+      "start_time": 5.316,
+      "end_time": 9.666,
+      "words": [
+        {
+          "text": "The",
+          "start_time": 5.316,
+          "end_time": 5.700
+        },
+        {
+          "text": "one",
+          "start_time": 6.000,
+          "end_time": 6.800
+        },
+        {
+          "text": "de-",
+          "start_time": 8.000,
+          "end_time": 8.500
+        },
+        {
+          "text": "sire",
+          "start_time": 8.500,
+          "end_time": 9.666
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "Believe when I say",
+      "start_time": 10.366,
+      "end_time": 14.696,
+      "words": [
+        {
+          "text": "Be-",
+          "start_time": 10.366,
+          "end_time": 10.800
+        },
+        {
+          "text": "lieve",
+          "start_time": 10.800,
+          "end_time": 11.700
+        },
+        {
+          "text": "when",
+          "start_time": 12.800,
+          "end_time": 13.200
+        },
+        {
+          "text": "I",
+          "start_time": 13.500,
+          "end_time": 13.900
+        },
+        {
+          "text": "say",
+          "start_time": 13.900,
+          "end_time": 14.696
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "text": "I want it that way",
+      "start_time": 15.896,
+      "end_time": 19.706,
+      "words": [
+        {
+          "text": "I",
+          "start_time": 15.896,
+          "end_time": 16.300
+        },
+        {
+          "text": "want",
+          "start_time": 16.300,
+          "end_time": 16.800
+        },
+        {
+          "text": "it",
+          "start_time": 16.800,
+          "end_time": 17.200
+        },
+        {
+          "text": "that",
+          "start_time": 17.800,
+          "end_time": 18.600
+        },
+        {
+          "text": "way",
+          "start_time": 18.900,
+          "end_time": 19.706
+        }
+      ]
+    }
+  ]
+} 

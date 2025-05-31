@@ -10,7 +10,9 @@ from livekit.plugins import (
     noise_cancellation,
     silero,
     tavus,
+    elevenlabs
 )
+from livekit.plugins.elevenlabs import VoiceSettings
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 import requests
 
@@ -74,29 +76,37 @@ class Assistant(Agent):
 
 
 async def entrypoint(ctx: agents.JobContext):
+    session = AgentSession(
+        stt=deepgram.STT(model="nova-3", language="multi"),
+        llm=openai.LLM(model="gpt-4o-mini"),
+        tts=elevenlabs.TTS(
+            voice_id="21m00Tcm4TlvDq8ikWAM",
+            voice_settings=VoiceSettings(
+                stability=0.75,
+                similarity_boost=0.75,
+                style=0.5,
+                use_speaker_boost=True
+            )
+        ),
+        vad=silero.VAD.load(),
+        turn_detection=MultilingualModel(),
+    )
+    
     # session = AgentSession(
-    #     stt=deepgram.STT(model="nova-3", language="multi"),
-    #     llm=openai.LLM(model="gpt-4o-mini"),
-    #     tts=cartesia.TTS(),
-    #     vad=silero.VAD.load(),
-    #     turn_detection=MultilingualModel(),
+    #     llm=openai.realtime.RealtimeModel(voice="alloy"),
     # )
     
-    session = AgentSession(
-        llm=openai.realtime.RealtimeModel(voice="alloy"),
-    )
-    
     # Connect to the room first
-    await ctx.connect()
     
-    avatar = tavus.AvatarSession(
-        api_key=tavus_api_key[len(tavus_api_key) - 1],
-        replica_id="r79e1c033f",  # ID of the Tavus replica to use
-        persona_id="p83b6ee0774b",  # ID of the Tavus persona to use (see preceding section for configuration details)
-    )
     
-    # Start the avatar and wait for it to join
-    await avatar.start(session, room=ctx.room)
+    # avatar = tavus.AvatarSession(
+    #     api_key=tavus_api_key[len(tavus_api_key) - 1],
+    #     replica_id="r79e1c033f",  # ID of the Tavus replica to use
+    #     persona_id="p83b6ee0774b",  # ID of the Tavus persona to use (see preceding section for configuration details)
+    # )
+    
+    # # Start the avatar and wait for it to join
+    # await avatar.start(session, room=ctx.room)
 
     await session.start(
         room=ctx.room,
@@ -109,6 +119,8 @@ async def entrypoint(ctx: agents.JobContext):
             audio_enabled=True,
         ),
     )
+    
+    await ctx.connect()
 
     await session.generate_reply(
         instructions="Greet the user and offer your assistance."

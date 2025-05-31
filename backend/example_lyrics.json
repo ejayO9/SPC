@@ -1,0 +1,83 @@
+{
+  "song_title": "Your Song Title",
+  "artist": "Artist Name",
+  "duration": 180.5,
+  "lyrics": [
+    {
+      "id": 1,
+      "text": "First line of the song goes here",
+      "start_time": 2.0,
+      "end_time": 5.5,
+      "words": [    
+        {
+          "text": "First",
+          "start_time": 2.0,
+          "end_time": 2.5
+        },
+        {
+          "text": "line",
+          "start_time": 2.5,
+          "end_time": 3.0
+        },
+        {
+          "text": "of",
+          "start_time": 3.0,
+          "end_time": 3.2
+        },
+        {
+          "text": "the",
+          "start_time": 3.2,
+          "end_time": 3.5
+        },
+        {
+          "text": "song",
+          "start_time": 3.5,
+          "end_time": 4.2
+        },
+        {
+          "text": "goes",
+          "start_time": 4.2,
+          "end_time": 4.8
+        },
+        {
+          "text": "here",
+          "start_time": 4.8,
+          "end_time": 5.5
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "Second line continues the melody",
+      "start_time": 5.5,
+      "end_time": 9.0,
+      "words": [
+        {
+          "text": "Second",
+          "start_time": 5.5,
+          "end_time": 6.2
+        },
+        {
+          "text": "line",
+          "start_time": 6.2,
+          "end_time": 6.8
+        },
+        {
+          "text": "continues",
+          "start_time": 6.8,
+          "end_time": 7.5
+        },
+        {
+          "text": "the",
+          "start_time": 7.5,
+          "end_time": 7.8
+        },
+        {
+          "text": "melody",
+          "start_time": 7.8,
+          "end_time": 9.0
+        }
+      ]
+    }
+  ]
+} 

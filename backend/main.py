@@ -230,6 +230,23 @@ async def get_reference_pitch():
     """Get the reference pitch data"""
     return reference_pitch_data
 
+@app.get("/lyrics")
+async def get_lyrics():
+    """Get the lyrics data with timing information"""
+    try:
+        # You should replace 'song_lyrics.json' with the actual lyrics file for your song
+        with open('song_lyrics.json', 'r', encoding='utf-8') as f:
+            lyrics_data = json.load(f)
+        return lyrics_data
+    except FileNotFoundError:
+        # Return example lyrics if the actual file doesn't exist
+        with open('example_lyrics.json', 'r', encoding='utf-8') as f:
+            lyrics_data = json.load(f)
+        return lyrics_data
+    except Exception as e:
+        logger.error(f"Error loading lyrics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load lyrics")
+
 @app.get("/song/{filename}")
 async def get_song(filename: str):
     """Serve the song file"""

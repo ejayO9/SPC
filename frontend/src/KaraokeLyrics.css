@@ -1,0 +1,265 @@
+.karaoke-lyrics-container {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(15, 20, 25, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Header Section */
+.karaoke-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.song-info h3 {
+  margin: 0;
+  font-size: 24px;
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.song-info p {
+  margin: 5px 0 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Lyrics Display Area */
+.lyrics-display {
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+/* Line Wrappers */
+.lyrics-line-wrapper {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Add fade effect at edges */
+.lyrics-line-wrapper::before,
+.lyrics-line-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.lyrics-line-wrapper::before {
+  left: 0;
+  background: linear-gradient(90deg, 
+    rgba(15, 20, 25, 0.8) 0%, 
+    transparent 100%);
+}
+
+.lyrics-line-wrapper::after {
+  right: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(15, 20, 25, 0.8) 100%);
+}
+
+.current-line-wrapper {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.2);
+}
+
+.next-line-wrapper {
+  opacity: 0.6;
+  transform: scale(0.95);
+}
+
+/* Progress Bar for Current Line */
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(0, 255, 136, 0.1) 50%, 
+    rgba(0, 255, 136, 0.2) 100%);
+  transition: width 0.1s linear;
+  z-index: 1;
+}
+
+/* Lyrics Lines */
+.lyrics-line {
+  position: relative;
+  z-index: 2;
+  padding: 20px 30px;
+  text-align: center;
+  font-size: 28px;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.next-line {
+  font-size: 22px;
+  padding: 15px 25px;
+}
+
+/* Word Styling */
+.word {
+  display: inline-block;
+  position: relative;
+  transition: all 0.2s ease;
+  padding: 2px 4px;
+  border-radius: 4px;
+  margin: 0 2px;
+}
+
+.word.upcoming {
+  color: rgba(255, 255, 255, 0.5);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.word.sung {
+  color: #00ff88;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.8),
+               0 0 40px rgba(0, 255, 136, 0.5);
+  transform: scale(1.05);
+  font-weight: 600;
+}
+
+.word.singing {
+  position: relative;
+  color: #ffffff;
+  font-weight: 600;
+  transform: scale(1.1);
+  animation: pulse 0.5s ease-in-out infinite;
+}
+
+/* Gradient fill effect for singing word */
+.word.singing::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    #00ff88 0%, 
+    #00ff88 calc(var(--progress, 0) * 100%), 
+    transparent calc(var(--progress, 0) * 100%));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: inherit;
+}
+
+/* Underline effect for singing word */
+.word.singing::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    #00ff88 0%, 
+    #00ff88 calc(var(--progress, 0) * 100%), 
+    rgba(255, 255, 255, 0.2) calc(var(--progress, 0) * 100%));
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+}
+
+/* Time Indicator */
+.time-indicator {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.time-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.time-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88 0%, #00ffaa 100%);
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .karaoke-lyrics-container {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  .song-info h3 {
+    font-size: 20px;
+  }
+  
+  .song-info p {
+    font-size: 14px;
+  }
+  
+  .lyrics-line {
+    font-size: 22px;
+    padding: 15px 20px;
+  }
+  
+  .next-line {
+    font-size: 18px;
+    padding: 12px 20px;
+  }
+  
+  .word {
+    padding: 1px 3px;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1400px) {
+  .lyrics-line {
+    font-size: 32px;
+    padding: 25px 40px;
+  }
+  
+  .next-line {
+    font-size: 26px;
+    padding: 20px 35px;
+  }
+} 
