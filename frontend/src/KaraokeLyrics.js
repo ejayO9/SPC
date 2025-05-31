@@ -72,17 +72,6 @@ const KaraokeLyrics = ({ currentTime, isPlaying }) => {
     return {};
   };
 
-  // Calculate line progress for background fill
-  const getLineProgress = (line) => {
-    if (currentLineIndex >= 0 && line === lyricsData.lyrics[currentLineIndex]) {
-      const lineStart = line.start_time;
-      const lineEnd = line.end_time;
-      const progress = Math.min(Math.max((currentTime - lineStart) / (lineEnd - lineStart), 0), 1);
-      return progress;
-    }
-    return 0;
-  };
-
   if (!lyricsData || !lyricsData.lyrics) {
     return <div className="karaoke-lyrics-container">Loading lyrics...</div>;
   }
@@ -92,20 +81,9 @@ const KaraokeLyrics = ({ currentTime, isPlaying }) => {
 
   return (
     <div className="karaoke-lyrics-container">
-      <div className="karaoke-header">
-        <div className="song-info">
-          <h3>{lyricsData.song_title}</h3>
-          <p>{lyricsData.artist}</p>
-        </div>
-      </div>
-      
       <div className="lyrics-display">
         {/* Current Line */}
         <div className="lyrics-line-wrapper current-line-wrapper">
-          <div 
-            className="progress-bar"
-            style={{ width: `${currentLine ? getLineProgress(currentLine) * 100 : 0}%` }}
-          />
           <div className="lyrics-line current-line" ref={currentLineRef}>
             {currentLine ? (
               currentLine.words ? (
@@ -152,16 +130,6 @@ const KaraokeLyrics = ({ currentTime, isPlaying }) => {
               <span className="word upcoming"></span>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Progress indicator */}
-      <div className="time-indicator">
-        <div className="time-bar">
-          <div 
-            className="time-progress"
-            style={{ width: `${(currentTime / lyricsData.duration) * 100}%` }}
-          />
         </div>
       </div>
     </div>
