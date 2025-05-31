@@ -12,6 +12,29 @@ const LIVEKIT_SERVER_URL = process.env.REACT_APP_LIVEKIT_SERVER_URL || 'wss://yo
 const LIVEKIT_API_KEY = process.env.REACT_APP_LIVEKIT_API_KEY || 'your-api-key';
 const LIVEKIT_API_SECRET = process.env.REACT_APP_LIVEKIT_API_SECRET || 'your-api-secret';
 
+// Dynamically load memes
+function importAll(r) {
+  return r.keys().map(r);
+}
+
+let goodMemes = [];
+try {
+  const goodMemeContext = require.context('./memes/good', false, /\.(jpeg|jpg|png|gif)$/);
+  goodMemes = importAll(goodMemeContext).map(module => module.default || module);
+} catch (e) {
+  console.error("Could not load good memes:", e);
+  // Optionally, provide fallback memes or an empty array
+}
+
+let badMemes = [];
+try {
+  const badMemeContext = require.context('./memes/bad', false, /\.(jpeg|jpg|png|gif)$/);
+  badMemes = importAll(badMemeContext).map(module => module.default || module);
+} catch (e) {
+  console.error("Could not load bad memes:", e);
+  // Optionally, provide fallback memes or an empty array
+}
+
 function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -24,6 +47,12 @@ function App() {
   const [liveKitToken, setLiveKitToken] = useState(null);
   const [showAvatar, setShowAvatar] = useState(false);
   const [analyzedSections, setAnalyzedSections] = useState([]);
+
+  const [currentMeme, setCurrentMeme] = useState(null);
+  const [showMeme, setShowMeme] = useState(false);
+  const [consecutiveGoodCount, setConsecutiveGoodCount] = useState(0);
+  const [consecutiveBadCount, setConsecutiveBadCount] = useState(0);
+  const [isMemeCycleActive, setIsMemeCycleActive] = useState(false);
 
   const audioRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -94,22 +123,65 @@ function App() {
         const data = JSON.parse(event.data);
 
         if (data.type === 'pitch_update') {
-          // Update user pitch data
+          // Update user pitch data (this part is always active)
           const newUserPitch = data.user_pitch.map(point => ({
             ...point,
             timestamp: point.timestamp + data.time_offset
           }));
-
           setUserPitchData(prev => [...prev, ...newUserPitch]);
 
-          // Check for problem sections
-          const problems = data.comparisons.filter(comp =>
-            comp.deviation_percentage && comp.deviation_percentage > 30
-          );
+          // Only process comparisons for memes if no meme cycle is active
+          if (!isMemeCycleActive) {
+            const problems = data.comparisons.filter(comp =>
+              comp.deviation_percentage && comp.deviation_percentage > 30
+            );
 
-          if (problems.length > 0) {
-            setProblemSections(prev => [...prev, ...problems]);
-          }
+            if (problems.length > 0) {
+              const newBadCount = consecutiveBadCount + problems.length;
+              setConsecutiveBadCount(newBadCount);
+              setConsecutiveGoodCount(0); // Reset good count on any problem
+
+              if (newBadCount >= 20 && badMemes.length > 0) { // isMemeCycleActive is false here
+                setIsMemeCycleActive(true); // Start meme cycle, stop counting
+                const randomMeme = badMemes[Math.floor(Math.random() * badMemes.length)];
+                setCurrentMeme(randomMeme);
+                setShowMeme(true);
+                setConsecutiveBadCount(0); // Reset count *after* triggering for next cycle
+                
+                setTimeout(() => { // Meme visible duration (3s)
+                  setShowMeme(false); // Start fade-out
+                  setTimeout(() => { // Fade-out animation duration (0.5s)
+                    // Meme has faded out, now start cooldown
+                    setTimeout(() => { // Cooldown duration (2s)
+                      setIsMemeCycleActive(false); // End of meme cycle, counting can resume
+                    }, 2000); // 2s cooldown
+                  }, 500); // 0.5s animation
+                }, 1500); // 3s visible
+              }
+            } else { // No problems in this batch of comparisons
+              const newGoodCount = consecutiveGoodCount + data.comparisons.length;
+              setConsecutiveGoodCount(newGoodCount);
+              // Bad count is already 0 or was reset by a previous problem batch
+              // setConsecutiveBadCount(0); // No need to reset bad if it's already being reset by problems
+
+              if (newGoodCount >= 20 && goodMemes.length > 0) { // isMemeCycleActive is false here
+                setIsMemeCycleActive(true); // Start meme cycle, stop counting
+                const randomMeme = goodMemes[Math.floor(Math.random() * goodMemes.length)];
+                setCurrentMeme(randomMeme);
+                setShowMeme(true);
+                setConsecutiveGoodCount(0); // Reset count *after* triggering for next cycle
+
+                setTimeout(() => { // Meme visible duration (3s)
+                  setShowMeme(false); // Start fade-out
+                  setTimeout(() => { // Fade-out animation (0.5s)
+                    setTimeout(() => { // Cooldown (2s)
+                      setIsMemeCycleActive(false); // End of cycle, counting can resume
+                    }, 2000); // 2s cooldown
+                  }, 500); // 0.5s animation
+                }, 3000); // 3s visible
+              }
+            }
+          } // End of if (!isMemeCycleActive)
         } else if (data.type === 'performance_complete') {
           setPerformanceComplete(true);
           console.log('Received performance_complete, closing WebSocket');
@@ -481,6 +553,13 @@ function App() {
               </div>
             )}
           </div>
+
+          {/* Meme Display - Moved inside central-area */}
+          {currentMeme && (
+            <div className={`meme-popup ${showMeme ? '' : 'hide'}`}>
+              <img src={currentMeme} alt="meme" className="meme-image" />
+            </div>
+          )}
         </div>
 
         {/* Controls - Below Central Area, Above Pitch Graph */}
