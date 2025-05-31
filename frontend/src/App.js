@@ -548,6 +548,11 @@ function App() {
             {/* TODO: Implement webcam feed here */}
             <video ref={webcamVideoRef} autoPlay playsInline muted className="webcam-video-element"></video>
           </div>
+          {/* Karaoke Lyrics Display moved here */}
+          <KaraokeLyrics 
+            currentTime={currentTime >= 2 ? currentTime - 2 : 0} 
+            isPlaying={isPlaying}
+          />
         </div>
 
         {/* Visualization Container - Contains Avatar and Pitch Visualizer */}
@@ -580,12 +585,6 @@ function App() {
         </div>
 
         {/* Controls - Below Central Area, Above Pitch Graph */}
-
-        {/* Karaoke Lyrics Display */}
-        <KaraokeLyrics 
-          currentTime={currentTime >= 2 ? currentTime - 2 : 0} 
-          isPlaying={isPlaying}
-        />
 
           {/* Pitch Visualizer - Bottom */}
           <div className="pitch-visualizer-container">
