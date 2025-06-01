@@ -371,10 +371,20 @@ function App() {
   // Effect to run analysis when performance is complete and recording has stopped
   useEffect(() => {
     if (performanceComplete && !isRecording) {
-      console.log("useEffect: performanceComplete is true and isRecording is false. Calling analyzePerformance.");
+      console.log("useEffect: performanceComplete is true and isRecording is false. Calling analyzePerformance and showing avatar.");
       analyzePerformance();
+      // Automatically try to show avatar when performance is complete
+      if (!liveKitToken) {
+        generateDemoToken().then(token => {
+          if (token) {
+            setShowAvatar(true);
+          }
+        });
+      } else {
+        setShowAvatar(true);
+      }
     }
-  }, [performanceComplete, isRecording, analyzePerformance]);
+  }, [performanceComplete, isRecording, analyzePerformance, liveKitToken]); // Added liveKitToken to dependencies
 
   // Prepare data for visualization
   const prepareChartData = () => {
@@ -500,16 +510,6 @@ function App() {
     return processedData;
   };
 
-  const handleShowAvatarClick = async () => {
-    let currentToken = liveKitToken;
-    if (!currentToken) {
-      currentToken = await generateDemoToken();
-    }
-    if (currentToken) {
-      setShowAvatar(true);
-    }
-  };
-
   const chartData = prepareChartData();
 
   return (
@@ -559,20 +559,14 @@ function App() {
         <div className="visualization-container">
           {/* Avatar Agent Section - Positioned absolutely within visualization-container */}
           <div className="avatar-section-container">
-            {showAvatar && liveKitToken ? (
+            {liveKitToken && (
               <AvatarAgent
                 token={liveKitToken}
                 serverUrl={LIVEKIT_SERVER_URL}
               />
-            ) : (
-              <div className="avatar-placeholder">
-                <button
-                  className="show-avatar-button-inline"
-                  onClick={handleShowAvatarClick}
-                >
-                  Show AI Assistant
-                </button>
-              </div>
+            )}
+            {showAvatar && (
+              <img src="/anu2.png" alt="Anu Malik" className="anu-malik-image" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
             )}
           </div>
           

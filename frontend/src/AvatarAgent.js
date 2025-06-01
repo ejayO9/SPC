@@ -2,68 +2,16 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   LiveKitRoom,
   RoomAudioRenderer,
-  VideoTrack,
-  useParticipants,
-  useTracks,
-  useRoomContext
+  // VideoTrack, // Removed
+  // useParticipants, // Removed
+  // useTracks, // Removed
+  // useRoomContext // Removed
 } from '@livekit/components-react';
 import '@livekit/components-styles';
-import { Track } from 'livekit-client';
+// import { Track } from 'livekit-client'; // Removed
 
-// Avatar Display Component
-function AvatarDisplay() {
-  const participants = useParticipants();
-  const tracks = useTracks(
-    [Track.Source.Camera],
-    { onlySubscribed: true }
-  );
-  const [waitingTime, setWaitingTime] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setWaitingTime(prev => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Find the avatar participant (usually the first remote participant)
-  const avatarTrack = tracks.find(track => 
-    track.publication && 
-    track.publication.kind === Track.Kind.Video &&
-    track.participant && 
-    track.participant.identity !== 'local'
-  );
-
-  return (
-    <div className="avatar-display">
-      {avatarTrack && avatarTrack.publication && avatarTrack.participant ? (
-        <VideoTrack 
-          trackRef={avatarTrack}
-          className="avatar-video"
-        />
-      ) : (
-        <div className="avatar-placeholder">
-          <div className="avatar-loading">
-            <div className="loading-spinner"></div>
-            <p>Waiting for avatar to join...</p>
-            <p className="debug-info">
-              Participants: {participants.length} | 
-              Video tracks: {tracks.filter(t => t.publication?.kind === Track.Kind.Video).length} |
-              Time: {waitingTime}s
-            </p>
-            {waitingTime > 30 && (
-              <div className="avatar-timeout-message">
-                <p>Avatar is taking longer than expected.</p>
-                <p>The Tavus service might be initializing. This can take up to 60 seconds.</p>
-                <p>If it doesn't appear, check the avatar agent console for errors.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+// Avatar Display Component - Entire component removed
+// function AvatarDisplay() { ... }
 
 // Main Avatar Agent Component
 function AvatarAgent({ token, serverUrl }) {
@@ -73,20 +21,20 @@ function AvatarAgent({ token, serverUrl }) {
 
   // Handle connection state changes
   const handleConnected = useCallback(() => {
-    console.log('Connected to LiveKit room');
+    console.log('Connected to LiveKit room for voice agent');
     setIsConnected(true);
     setConnectionError(null);
     setRoomState('connected');
   }, []);
 
   const handleDisconnected = useCallback(() => {
-    console.log('Disconnected from LiveKit room');
+    console.log('Disconnected from LiveKit room for voice agent');
     setIsConnected(false);
     setRoomState('disconnected');
   }, []);
 
   const handleError = useCallback((error) => {
-    console.error('LiveKit connection error:', error);
+    console.error('LiveKit connection error for voice agent:', error);
     setConnectionError(error?.message || 'Connection failed');
     setRoomState('error');
   }, []);
@@ -96,7 +44,7 @@ function AvatarAgent({ token, serverUrl }) {
     return (
       <div className="avatar-agent-container">
         <div className="avatar-error">
-          <p>Missing configuration: {!token ? 'Token' : 'Server URL'} is required</p>
+          <p>Missing configuration for Voice Agent: {!token ? 'Token' : 'Server URL'} is required</p>
         </div>
       </div>
     );
@@ -104,49 +52,38 @@ function AvatarAgent({ token, serverUrl }) {
 
   return (
     <div className="avatar-agent-container">
+      {/* Header can be simplified or removed if not needed for a voice-only agent */}
       <div className="avatar-header">
-        <h2>AI Assistant Avatar</h2>
+        <h2>AI Assistant</h2>
         <div className="connection-status">
           <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}></span>
-          <span>{isConnected ? 'Connected' : 'Disconnected'} ({roomState})</span>
+          <span>{isConnected ? 'Connected' : `Connecting... (${roomState})`}</span>
         </div>
       </div>
 
       {connectionError && (
         <div className="avatar-error">
-          <p>Error: {connectionError}</p>
+          <p>Connection Error: {connectionError}</p>
         </div>
       )}
 
       <LiveKitRoom
-        video={false}
-        audio={false}
+        video={false} // Explicitly false
+        audio={true}  // Agent needs to send audio
         token={token}
         serverUrl={serverUrl}
         connectOptions={{
           autoSubscribe: true,
         }}
-        options={{
-          videoCaptureDefaults: {
-            deviceId: '',
-            resolution: undefined,
-          },
-          audioCaptureDefaults: {
-            deviceId: '',
-          },
-          publishDefaults: {
-            videoEncoding: undefined,
-            audioPreset: undefined,
-          },
-        }}
+        // Removed options related to videoCaptureDefaults, audioCaptureDefaults, publishDefaults as agent likely handles this
         onConnected={handleConnected}
         onDisconnected={handleDisconnected}
         onError={handleError}
         data-lk-theme="default"
-        style={{ height: '100%' }}
+        style={{ display: 'none' }} // The component itself doesn't need to be visible
       >
-        <AvatarDisplay />
-        <RoomAudioRenderer />
+        {/* <AvatarDisplay /> // Removed */}
+        <RoomAudioRenderer /> {/* This is crucial for hearing the agent */}
       </LiveKitRoom>
     </div>
   );

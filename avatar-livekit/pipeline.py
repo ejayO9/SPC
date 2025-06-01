@@ -19,8 +19,11 @@ import requests
 load_dotenv()
 
 tavus_api_key = ["aa397fc44131439fba2eef17ea0b4851","bd1ba58aab254f31b4a2d028c5a4babe"]
-print(len(tavus_api_key) - 1)
 
+#store the lyrics of the song in a variable
+lyrics_str = open("song_lyrics.json", "r").read()
+#convert the lyrics to a string format for the prompt
+lyrics_str = str(lyrics_str)
 
 def fetch_analysis_data():
     try:
@@ -55,32 +58,39 @@ class Assistant(Agent):
                         Here is the actual pitch analysis data:
                         {pitch_analysis_str}
                         
-                        You have to give where the user can improve on each section of the song.
+                        Here are the lyrics of the song along with the timestamp of the section:
+                        {lyrics_str}
                         
+                        You have to give feedbackn on where the user can improve on each section of the song by telling the user the lyrics of the song's section where their pitch is deviating from the reference pitch. and then tell them whether to improve their pitch or reduce.
+                        
+                        If the user asks what is pitch then explain it in a way that is easy to understand by any person by using pop culture references. Such
                         <good-feedback>
-                            1) 
+                            You have to give bad feedback to the user.
                         </good-feedback>
                         
                         <bad-feedback>
-                        You have to give bad feedback to the user.
+                            You have to give bad feedback to the user.
                         </bad-feedback>
                         
                         <average-feedback>
-                        You have to give average feedback to the user.
+                            You have to give average feedback to the user.
                         </average-feedback>
                          
-                         
-                         
-                         
                          ''')
-
-
+        
+        
+openai_azure_key = os.getenv("OPENAI_AZURE_KEY")
+openai_azure_base_url = os.getenv("OPENAI_AZURE_BASE_URL")
 async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
         stt=deepgram.STT(model="nova-3", language="multi"),
-        llm=openai.LLM(model="gpt-4o-mini"),
+        llm=openai.LLM(
+            model="gpt-4o-mini",
+            base_url=openai_azure_base_url,
+            api_key=openai_azure_key,
+            ),
         tts=elevenlabs.TTS(
-            voice_id="21m00Tcm4TlvDq8ikWAM",
+            voice_id="ng7zkyi9pBV1eFqGqWsl",
             voice_settings=VoiceSettings(
                 stability=0.75,
                 similarity_boost=0.75,
@@ -128,4 +138,4 @@ async def entrypoint(ctx: agents.JobContext):
 
 
 if __name__ == "__main__":
-    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint))
+    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint,num_idle_processes=1))
